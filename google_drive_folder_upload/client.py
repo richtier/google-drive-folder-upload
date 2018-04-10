@@ -1,16 +1,15 @@
 import os
 
 from pydrive.drive import GoogleDrive
-
-import authentication
+from pydrive.auth import GoogleAuth
 
 
 class GoogleDriveClient:
 
-    authentication_class = authentication.Authenticator
 
     def __init__(self):
-        authenticator = self.authentication_class()
+        authenticator = GoogleAuth()
+        authenticator.LocalWebserverAuth()
         self.drive = GoogleDrive(authenticator)
 
     def upload_file(self, path):
