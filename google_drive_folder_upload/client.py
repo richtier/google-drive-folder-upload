@@ -1,11 +1,16 @@
+import io
 import os
 
+from google.cloud import vision
+from google.cloud.vision import types
 from pydrive.drive import GoogleDrive
 from pydrive.auth import GoogleAuth
 
 
-class GoogleDriveClient:
+google_vision_client = vision.ImageAnnotatorClient()
 
+
+class GoogleDriveClient:
 
     def __init__(self):
         authenticator = GoogleAuth()
@@ -37,3 +42,30 @@ class GoogleDriveClient:
             })
             folder.Upload()
         return folder
+
+
+class GoogleVisionClient:
+    HUMAN_LABELS = [
+        'girl',
+        'boy',
+        'person',
+        'man',
+        'hair',
+        'face',
+        'eyebrow',
+        'chin',
+        'forehead',
+        'nose',
+        'head',
+    ]
+
+    def detect_labels(self, path):
+        with io.open(path, 'rb') as image_file:
+            content = image_file.read()
+        image = types.Image(content=content)
+        response =  google_vision_client.label_detection(image=image)
+        return response.label_annotations
+
+    def is_human(self, path):
+        labels = self.detect_labels(path)
+        return any(label.description in self.HUMAN_LABELS for label in labels)
